@@ -35,7 +35,7 @@ class BatCountry:
         self.patch_model = patch_model
 
     def dream(self, image, iter_n=10, octave_n=4, octave_scale=np.sqrt(2),
-              end='inception_4c/output', clip=True, step_fn=None,
+              end='inception_4c/output', clip=True, seed=0, step_fn=None,
               objective_fn=None, preprocess_fn=None, deprocess_fn=None,
               verbose=True, visualize=False, **step_params):
         # if a step function has not been supplied, initialize it as the
@@ -82,6 +82,7 @@ class BatCountry:
             src.reshape(1, 3, h, w)
             src.data[0] = octave_base + detail
 
+            np.random.seed(seed)
             for i in range(iter_n):
                 step_fn(self.net, end=end, clip=clip,
                         objective_fn=objective_fn, **step_params)
