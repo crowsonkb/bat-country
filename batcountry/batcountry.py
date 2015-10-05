@@ -96,7 +96,7 @@ class BatCountry:
 
                 if verbose:
                     print('octave={}, iter={}, layer={}, image_dim={}'.format(
-                          octave, i, end, vis.shape))
+                          octave, i, end, vis.shape), flush=True)
 
                 # check to see if the visualization list should be
                 # updated
