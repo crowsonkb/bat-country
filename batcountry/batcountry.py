@@ -1,6 +1,5 @@
 import caffe
 from google.protobuf import text_format
-import io
 import numpy as np
 import os
 from PIL import Image
