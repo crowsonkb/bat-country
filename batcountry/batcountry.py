@@ -87,15 +87,16 @@ class BatCountry:
                         objective_fn=objective_fn, **step_params)
 
                 # visualization
-                vis = deprocess_fn(self.net, src.data[0])
+                if visualize:
+                    vis = deprocess_fn(self.net, src.data[0])
 
-                # adjust image contrast if clipping is disabled
-                if not clip:
-                    vis = vis * (255.0 / np.percentile(vis, 99.98))
+                    # adjust image contrast if clipping is disabled
+                    if not clip:
+                        vis = vis * (255.0 / np.percentile(vis, 99.98))
 
                 if verbose:
                     print('octave={}, iter={}, layer={}, image_dim={}'.format(
-                          octave, i, end, vis.shape), flush=True)
+                          octave, i, end, src.data[0].shape), flush=True)
 
                 # check to see if the visualization list should be
                 # updated
