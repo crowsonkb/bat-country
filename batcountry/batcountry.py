@@ -8,7 +8,7 @@ from skimage.transform import rescale, resize
 
 class BatCountry:
     def __init__(self, base_path, deploy_path=None, model_path=None,
-                 patch_model='./tmp.prototxt', mean=(104.0, 116.0, 122.0),
+                 patch_model='./tmp.prototxt', mean=(104.0, 117.0, 123.0),
                  channels=(2, 1, 0)):
         # if the deploy path is None, set the default
         if deploy_path is None:
