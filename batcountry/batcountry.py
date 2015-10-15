@@ -4,12 +4,12 @@ import numpy as np
 import os
 from PIL import Image
 from skimage.transform import rescale, resize
+import tempfile
 
 
 class BatCountry:
     def __init__(self, base_path, deploy_path=None, model_path=None,
-                 patch_model='./tmp.prototxt', mean=(104.0, 117.0, 123.0),
-                 channels=(2, 1, 0)):
+                 mean=(104.0, 117.0, 123.0), channels=(2, 1, 0)):
         # if the deploy path is None, set the default
         if deploy_path is None:
             deploy_path = base_path + '/deploy.prototxt'
@@ -18,20 +18,20 @@ class BatCountry:
         if model_path is None:
             model_path = base_path + '/bvlc_googlenet.caffemodel'
 
-        # check to see if the model should be patched to compute gradients
-        if patch_model:
-            model = caffe.io.caffe_pb2.NetParameter()
-            text_format.Merge(open(deploy_path).read(), model)
-            model.force_backward = True
-            f = open(patch_model, 'w')
-            f.write(str(model))
-            f.close()
+        # patch the model to compute gradients
+        model = caffe.io.caffe_pb2.NetParameter()
+        text_format.Merge(open(deploy_path).read(), model)
+        model.force_backward = True
+        patch_tmp = tempfile.NamedTemporaryFile(
+            mode='w+', suffix='.prototxt', delete=False)
+        patch_tmp.file.write(str(model))
+        patch_tmp.file.close()
 
         # load the network and store the patched model path
-        self.net = caffe.Classifier(patch_model, model_path,
+        self.net = caffe.Classifier(patch_tmp.name, model_path,
                                     mean=np.float32(mean),
                                     channel_swap=channels)
-        self.patch_model = patch_model
+        self.patch_model = patch_tmp.name
 
     def dream(self, image, iter_n=10, octave_n=4, octave_scale=np.sqrt(2),
               end='inception_4c/output', clip=True, seed=0, step_fn=None,
