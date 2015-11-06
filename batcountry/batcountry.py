@@ -134,6 +134,8 @@ class BatCountry:
         ox, oy = np.random.randint(-jitter, jitter + 1, 2)
         src.data[0] = np.roll(np.roll(src.data[0], ox, -1), oy, -2)
 
+        for blob in net.blobs.values():
+            blob.diff[:] = 0
         net.forward(end=end)
         objective_fn(dst, **objective_params)
         net.backward(start=end)
