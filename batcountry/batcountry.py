@@ -1,3 +1,5 @@
+from __future__ import division, print_function
+
 import caffe
 from google.protobuf import text_format
 import numpy as np
@@ -5,7 +7,6 @@ import os
 from PIL import Image
 from skimage.transform import rescale, resize
 import tempfile
-
 
 class BatCountry:
     def __init__(self, base_path, deploy_path=None, model_path=None,
