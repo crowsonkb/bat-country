@@ -16,10 +16,14 @@ class BatCountry:
         # if the deploy path is None, set the default
         if deploy_path is None:
             deploy_path = base_path + '/deploy.prototxt'
+        else:
+            deploy_path = base_path + deploy_path
 
         # if the model path is None, set it to the default GoogleLeNet model
         if model_path is None:
             model_path = base_path + '/bvlc_googlenet.caffemodel'
+        else:
+            model_path = base_path + model_path
 
         # patch the model to compute gradients
         model = caffe.io.caffe_pb2.NetParameter()
