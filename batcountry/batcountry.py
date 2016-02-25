@@ -8,7 +8,6 @@ import caffe
 from google.protobuf import text_format
 import numpy as np
 from PIL import Image
-from skimage.transform import rescale, resize
 
 class BatCountry:
     def __init__(self, base_path, deploy_path=None, model_path=None,
@@ -67,10 +66,13 @@ class BatCountry:
 
         # prepare base images for all octaves
         octaves = [preprocess_fn(self.net, image)]
+        h, w = octaves[0].shape[-2:]
 
-        for i in range(octave_n - 1):
-            octaves.append(rescale(
-                octaves[-1].T/255, 1/octave_scale, order=3).T*255)
+        for i in range(1, octave_n):
+            h_new = np.int32(np.round(h/octave_scale**i))
+            w_new = np.int32(np.round(w/octave_scale**i))
+            octaves.append(BatCountry.resize(octaves[0], h_new, w_new,
+                                             Image.LANCZOS))
 
         # allocate image for network-produced details
         detail = np.zeros_like(octaves[-1])
@@ -85,8 +87,7 @@ class BatCountry:
 
             if octave > 0:
                 # upscale details from the previous octave
-                h1, w1 = detail.shape[-2:]
-                detail = resize(detail.T/255, (w, h, 3), order=3).T*255
+                detail = BatCountry.resize(detail, h, w)
 
             # resize the network's input image size
             src.reshape(1, 3, h, w)
@@ -224,3 +225,14 @@ class BatCountry:
     @staticmethod
     def deprocess(net, img):
         return np.dstack((img + net.transformer.mean['data'])[::-1])
+
+    @staticmethod
+    def resize(arr, h, w, method=Image.BICUBIC):
+        arr = np.float32(arr)
+        if arr.ndim == 3:
+            planes = [arr[i, :, :] for i in range(arr.shape[0])]
+        else:
+            raise TypeError('Only 3D CxHxW arrays are supported')
+        imgs = [Image.fromarray(plane) for plane in planes]
+        imgs_resized = [img.resize((w, h), method) for img in imgs]
+        return np.stack([np.array(img) for img in imgs_resized])
