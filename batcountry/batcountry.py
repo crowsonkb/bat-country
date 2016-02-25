@@ -175,8 +175,8 @@ class BatCountry:
     def layers(self):
         # return the layers of the network
         layers = []
-        for layer in self.net.blobs.keys():
-            if layer == 'data':
+        for i, layer in enumerate(self.net.blobs.keys()):
+            if i == 0:
                 continue
             if layer.find('_split_') == -1:
                 layers.append(layer)
