@@ -174,7 +174,13 @@ class BatCountry:
 
     def layers(self):
         # return the layers of the network
-        return self.net._layer_names
+        layers = []
+        for layer in self.net.blobs.keys():
+            if layer == 'data':
+                continue
+            if layer.find('_split_') == -1:
+                layers.append(layer)
+        return layers
 
     def cleanup(self):
         # remove the patched model from disk
