@@ -1,15 +1,22 @@
+"""The 'bat-country' package is an easy to use, highly extendible, lightweight
+Python module for inceptionism and deep dreaming with Convolutional Neural
+Networks and Caffe."""
+
 from __future__ import division, print_function
 
 import os
 import sys
 import tempfile
 
-import caffe
 from google.protobuf import text_format
 import numpy as np
 from PIL import Image
 
+import caffe
+
+
 class BatCountry:
+    """Contains all BatCountry functionality."""
     def __init__(self, base_path, deploy_path=None, model_path=None,
                  mean=(104.0, 117.0, 123.0), channels=(2, 1, 0)):
         # if the deploy path is None, set the default
@@ -51,7 +58,7 @@ class BatCountry:
         # if the objective function has not been supplied, initialize it
         # as the L2 objective
         if objective_fn is None:
-            objective_fn = BatCountry.L2_objective
+            objective_fn = BatCountry.l2_objective
 
         # if the preprocess function has not been supplied, initialize it
         if preprocess_fn is None:
@@ -108,7 +115,7 @@ class BatCountry:
 
                 if verbose:
                     print('octave={}, iter={}, layer={}, image_dim={}'.format(
-                          octave, i, end, src.data[0].shape))
+                        octave, i, end, src.data[0].shape))
                     sys.stdout.flush()
 
                 # check to see if the visualization list should be
@@ -137,7 +144,7 @@ class BatCountry:
         # if the objective function is None, initialize it as
         # the standard L2 objective
         if objective_fn is None:
-            objective_fn = BatCountry.L2_objective
+            objective_fn = BatCountry.l2_objective
 
         # input image is stored in Net's 'data' blob
         src = net.blobs['data']
@@ -174,7 +181,7 @@ class BatCountry:
         os.remove(self.patch_model)
 
     def prepare_guide(self, image, end='inception_4c/output',
-                      maxW=224, maxH=224, preprocess_fn=None):
+                      preprocess_fn=None):
         # if the preprocess function has not been supplied, initialize it
         if preprocess_fn is None:
             preprocess_fn = BatCountry.preprocess
@@ -185,14 +192,14 @@ class BatCountry:
         # GoogLeNet was trained on images with maximum width and heights
         # of 224 pixels -- if either dimension is larger than 224 pixels,
         # then we'll need to do some resizing
-        nW, nH = 224, 224
+        n_w, n_h = 224, 224
         if w != 224 or h != 224:
-            image = np.float32(image.resize((nW, nH), Image.LANCZOS))
+            image = np.float32(image.resize((n_w, n_h), Image.LANCZOS))
         else:
             image = np.float32(image)
 
         (src, dst) = (self.net.blobs['data'], self.net.blobs[end])
-        src.reshape(1, 3, nH, nW)
+        src.reshape(1, 3, n_h, n_w)
         src.data[0] = preprocess_fn(self.net, image)
         self.net.forward(end=end)
         guide_features = dst.data[0].copy()
@@ -200,7 +207,7 @@ class BatCountry:
         return guide_features
 
     @staticmethod
-    def L2_objective(dst):
+    def l2_objective(dst):
         dst.diff[:] = dst.data
 
     @staticmethod
@@ -212,10 +219,10 @@ class BatCountry:
         y = y.reshape(ch, -1)
 
         # compute the matrix of dot-products with guide features
-        A = x.T.dot(y)
+        a = x.T.dot(y)
 
         # select ones that match best
-        dst.diff[0].reshape(ch, -1)[:] = y[:, A.argmax(1)]
+        dst.diff[0].reshape(ch, -1)[:] = y[:, a.argmax(1)]
 
     @staticmethod
     def preprocess(net, img):
