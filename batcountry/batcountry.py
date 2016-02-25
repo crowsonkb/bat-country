@@ -57,7 +57,7 @@ class BatCountry:
     def dream(self, image, iter_n=10, octave_n=4, octave_scale=np.sqrt(2),
               end='inception_4c/output', clip=True, seed=0, step_fn=None,
               objective_fn=None, preprocess_fn=None, deprocess_fn=None,
-              verbose=True, visualize=False, **step_params):
+              verbose=True, visualize=False, progress=None, **step_params):
         # if a step function has not been supplied, initialize it as the
         # standard gradient ascent step
         if step_fn is None:
@@ -125,6 +125,9 @@ class BatCountry:
                     print('octave={}, iter={}, layer={}, image_dim={}'.format(
                         octave, i, end, src.data[0].shape))
                     sys.stdout.flush()
+
+                if progress is not None:
+                    progress(octave, i)
 
                 # check to see if the visualization list should be
                 # updated
