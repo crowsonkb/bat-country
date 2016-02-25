@@ -182,10 +182,6 @@ class BatCountry:
                 layers.append(layer)
         return layers
 
-    def cleanup(self):
-        # remove the patched model from disk
-        os.remove(self.patch_model)
-
     def prepare_guide(self, image, end='inception_4c/output',
                       preprocess_fn=None):
         # if the preprocess function has not been supplied, initialize it
