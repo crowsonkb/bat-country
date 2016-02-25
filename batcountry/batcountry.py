@@ -1,8 +1,8 @@
 from __future__ import division, print_function
 
-import tempfile
 import os
 import sys
+import tempfile
 
 import caffe
 from google.protobuf import text_format
