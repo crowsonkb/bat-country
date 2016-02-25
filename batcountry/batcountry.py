@@ -17,8 +17,16 @@ import caffe
 
 class BatCountry:
     """Contains all BatCountry functionality."""
-    def __init__(self, base_path, deploy_path=None, model_path=None,
-                 mean=(104.0, 117.0, 123.0), channels=(2, 1, 0)):
+    def __init__(self, base_path='', deploy_path=None, model_path=None,
+                 mean=(104.0, 117.0, 123.0), channels=(2, 1, 0), device=None):
+        # None: default device; -1: CPU; n for n >= 0: GPU n
+        if device is not None:
+            if device < 0:
+                caffe.set_mode_cpu()
+            else:
+                caffe.set_device(device)
+                caffe.set_mode_gpu()
+
         # if the deploy path is None, set the default
         if deploy_path is None:
             deploy_path = base_path + '/deploy.prototxt'
