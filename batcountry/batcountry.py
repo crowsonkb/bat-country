@@ -163,25 +163,27 @@ class BatCountry:
 
         # apply jitter shift
         ox, oy = np.random.randint(-jitter, jitter + 1, 2)
-        src.data[0] = np.roll(np.roll(src.data[0], ox, -1), oy, -2)
+        src_f = src.data[0]
+        src.data[0, ...] = np.roll(np.roll(src_f, ox, -1), oy, -2)
 
-        for blob in net.blobs.values():
-            blob.diff[:] = 0
+        # for blob in net.blobs.values():
+        #     blob.diff[:] = 0
         net.forward(end=end)
         objective_fn(dst, **objective_params)
         net.backward(start=end)
         g = src.diff[0]
 
         # apply normalized ascent step to the input image
-        src.data[:] += step_size / np.abs(g).mean() * g
+        src_f = src.data[0] + step_size / np.abs(g).mean() * g
 
         # unshift image
-        src.data[0] = np.roll(np.roll(src.data[0], -ox, -1), -oy, -2)
+        src_f = np.roll(np.roll(src_f, -ox, -1), -oy, -2)
 
         # unshift image
         if clip:
             bias = net.transformer.mean['data']
-            src.data[:] = np.clip(src.data, -bias, 255 - bias)
+            src_f = np.clip(src_f, -bias, 255 - bias)
+        src.data[0, ...] = src_f
 
     def layers(self):
         # return the layers of the network
@@ -221,7 +223,7 @@ class BatCountry:
 
     @staticmethod
     def l2_objective(dst):
-        dst.diff[:] = dst.data
+        dst.diff[0, ...] = dst.data[0]
 
     @staticmethod
     def guided_objective(dst, objective_features):
