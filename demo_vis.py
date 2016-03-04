@@ -23,7 +23,6 @@ args = ap.parse_args()
 bc = BatCountry(args.base_model)
 (image, visualizations) = bc.dream(np.float32(Image.open(args.image)),
 	end=args.layer, visualize=True)
-bc.cleanup()
 
 # loop over the visualizations
 for (k, vis) in visualizations:

@@ -26,7 +26,6 @@ features = bc.prepare_guide(Image.open(args.guide_image), end=args.layer)
 image = bc.dream(np.float32(Image.open(args.image)), end=args.layer,
 	iter_n=20, objective_fn=BatCountry.guided_objective,
 	objective_features=features,)
-bc.cleanup()
 
 # write the output image to file
 result = Image.fromarray(np.uint8(image))

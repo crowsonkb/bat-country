@@ -37,6 +37,3 @@ for imagePath in paths.list_images(args.images):
 		outputPath = "{}/{}_{}".format(args.output, layer.replace("/", "_"), filename)
 		result = Image.fromarray(np.uint8(image))
 		result.save(outputPath)
-
-# do some cleanup
-bc.cleanup()

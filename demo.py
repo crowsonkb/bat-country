@@ -21,7 +21,6 @@ args = ap.parse_args()
 # we can't stop here...
 bc = BatCountry(args.base_model)
 image = bc.dream(np.float32(Image.open(args.image)), end=args.layer)
-bc.cleanup()
 
 # write the output image to file
 result = Image.fromarray(np.uint8(image))
