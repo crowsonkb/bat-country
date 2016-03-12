@@ -12,6 +12,7 @@ from google.protobuf import text_format
 import numpy as np
 from PIL import Image
 
+os.environ['GLOG_minloglevel'] = '1'
 import caffe
 
 
