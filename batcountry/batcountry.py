@@ -4,9 +4,10 @@ Networks and Caffe."""
 
 from __future__ import division, print_function
 
+import logging
 import os
-import sys
 import tempfile
+import time
 
 from google.protobuf import text_format
 import numpy as np
@@ -16,10 +17,24 @@ os.environ['GLOG_minloglevel'] = '1'
 import caffe
 
 
+class Stopwatch:
+    def __init__(self):
+        self.last = time.perf_counter()
+        self.total = 0.0
+
+    def delta(self):
+        now = time.perf_counter()
+        delta = now - self.last
+        self.last = now
+        self.total += delta
+        return delta
+
+
 class BatCountry:
     """Contains all BatCountry functionality."""
     def __init__(self, base_path='', deploy_path=None, model_path=None,
-                 mean=(104.0, 117.0, 123.0), channels=(2, 1, 0), device=None):
+                 mean=(104.0, 117.0, 123.0), channels=(2, 1, 0), device=None,
+                 logger=None):
         # None: default device; -1: CPU; n for n >= 0: GPU n
         if device is not None:
             if device < 0:
@@ -27,6 +42,12 @@ class BatCountry:
             else:
                 caffe.set_device(device)
                 caffe.set_mode_gpu()
+
+        if logger is not None:
+            self.logger = logger
+        else:
+            self.logger = logging.getLogger(__name__)
+            logging.basicConfig(format='%(message)s')
 
         # if the deploy path is None, set the default
         if deploy_path is None:
@@ -77,8 +98,16 @@ class BatCountry:
         if deprocess_fn is None:
             deprocess_fn = BatCountry.deprocess
 
+        if verbose:
+            self.logger.setLevel(logging.DEBUG)
+        else:
+            self.logger.setLevel(logging.INFO)
+
         # initialize the visualization list
         visualizations = []
+
+        self.logger.debug('dream() starting.')
+        timer = Stopwatch()
 
         # prepare base images for all octaves
         octaves = [preprocess_fn(self.net, image)]
@@ -110,6 +139,9 @@ class BatCountry:
             src.data[0] = octave_base + detail
 
             np.random.seed(seed)
+
+            self.logger.debug('delta=%.3fs, preprocessing done.', timer.delta())
+
             for i in range(iter_n):
                 step_fn(self.net, end=end, clip=clip,
                         objective_fn=objective_fn, **step_params)
@@ -122,10 +154,8 @@ class BatCountry:
                     if not clip:
                         vis = vis * (255.0 / np.percentile(vis, 99.98))
 
-                if verbose:
-                    print('octave={}, iter={}, layer={}, image_dim={}'.format(
-                        octave, i, end, src.data[0].shape))
-                    sys.stdout.flush()
+                self.logger.debug('delta=%.3fs, octave=%d, iter=%d, layer=%s, image_dim=%s',
+                                  timer.delta(), octave, i, end, src.data[0].shape[::-1])
 
                 if progress is not None:
                     progress(octave, i)
@@ -147,6 +177,7 @@ class BatCountry:
         if visualize:
             r = (r, visualizations)
 
+        self.logger.debug('delta=%.3fs, dream() completed in %.2fs.', timer.delta(), timer.total)
         return r
 
     @staticmethod
